@@ -3,130 +3,232 @@
     /*jslint browser: true*/
     /*global L, console*/
 
+	function getOpacity(d) {
+		return d == '0' ? '0.6' : d == '1' ? '0.6' : d == '2' ? '0.6'
+				: d == '3' ? '0.6' : d == '4' ? '0.6' : d == '5' ? '0.6'
+						: d == '6' ? '0.6' : d == '7' ? '0.6'
+								: d == '8' ? '0.6' : d == '9' ? '0.6'
+										: d == 'x' ? '1.0' : '0';
+	}
+
+	function highlightFeature(e) {
+		var layer = e.target;
+
+		layer.setStyle({
+			weight : 5,
+			color : '#666',
+			dashArray : '',
+			fillOpacity : 0.7
+		});
+
+		if (!L.Browser.ie && !L.Browser.opera) {
+			layer.bringToFront();
+		}
+
+		info.update(layer.feature.properties);
+	}
+
+	function resetHighlight(e) {
+		geojson.resetStyle(e.target);
+		info.update();
+	}
+
+
+	// Check if there is an iceobservation on the given date.
+	function available(date) {
+		dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-"
+				+ date.getFullYear();
+		if ($.inArray(dmy, availableDates) != -1) {
+			return [ true, "", "Observationer" ];
+		} else {
+			return [ false, "", "Ingen observationer" ];
+		}
+	}
+		
+	// Zoom to the feature
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
     /**
      * A Leaflet control for showing one or more legends. Each legend contains
      * a colorbar, parameter name and units, source/attribution, and optionally
      * information about when the data was last updated.
      */
-    L.Control.Legend = L.Control.extend({
+    L.GeoJSON.IceObservations = L.GeoJSON.extend({
         options: {
-            position: "bottomleft",
-            language: "en",
-            timezone: 'local',
-            collapsedInfo: null
+            attribution: 'IS Observationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>'
         },
-            
-        legendOptions: {},
 
-        initialize: function(options) {
-            L.Util.setOptions(this, options);
+        initialize: function (options) {
             this._map = null;
-            if (this.options.collapsedInfo === null) {
-                this.options.collapsedInfo = true;
-                if (typeof window.matchMedia != "undefined" || typeof window.msMatchMedia != "undefined") {
-                    var mq = window.matchMedia('screen and (min-width: 641px) and (min-height: 641px)');
-                    if (mq.matches) {
-                        this.options.collapsedInfo = false;
-                    }
-                }
-            }
-            this._container = L.DomUtil.create('div', 'leaflet-layer-ice-mst-container');
-            this._container.style.display = 'none';
-        },
-
-        onAdd: function(map) {
-            return this._container;
-        },
-
-        _redraw: function() {
             var that = this;
-            this._container.innerHTML = ''; // clear container
-            //var containerInner = L.DomUtil.create('div', 'fcoo-legend-container', this._container);
-            //var btn_min = L.DomUtil.create('div', 'fcoo-legend-container-btn-minimize', this._container);
-            //btn_min.innerHTML = '-';
-            //$(this._container).append('<div>New content</div>');
-            //('div', 'fcoo-legend-container-btn-minimize');
-            //.fcoo-legend-item-btn-minimize
-            var isLeft = this.options.position.indexOf('left') !== -1;
-            var cssFloat = isLeft ? 'left' : 'right';
-            var lang = this.options.language;
-            $.each(this.legendOptions, function(idx, options) {
-                var imgUrl = options.imageUrl;
-                var attribution = options.attribution;
-                var lastUpdated = options.lastUpdated;
-                var epoch = options.epoch;
-                var longName = options.longName;
-                var units = options.units;
-                units = that._(units, lang);
-                var item = L.DomUtil.create('div', 'fcoo-legend-item', that._container);
-                item.style.cssFloat = cssFloat;
-                var itemMainSpan = L.DomUtil.create('span', '', item)
-                var itemDiv = L.DomUtil.create('div', 'fcoo-legend-item-div', itemMainSpan);
-                var item_img = L.DomUtil.create('img', 'fcoo-legend-item-image', itemDiv);
-                item_img.src = imgUrl;
+            L.setOptions(this, options);
+            this._layers = {};
 
-                var leginner = '';
-                var item_text = L.DomUtil.create('div', 'fcoo-legend-item-text', itemMainSpan);
+            this.iceObservationData = null;
+            this.selectedDate = '';
 
-                var lnameP = L.DomUtil.create('p', 'fcoo-legend-item-text-p', item_text);
-                var btn = L.DomUtil.create('i', 'fa-caret-square-o-down fa fcoo-legend-item-compress', lnameP);
-                btn.innerHTML = '&nbsp;&nbsp;';
-                if (longName !== undefined) {
-                    var longNameCap =
-                        longName.charAt(0).toUpperCase() +
-                        longName.slice(1);
-                    longNameCap = that._(longNameCap, lang);
-                    //var lnameP = L.DomUtil.create('p', 'fcoo-legend-item-text-p', item_text);
-                    if (units !== undefined && units !== '') {
-                        longNameCap = longNameCap + ' [' + units + ']';
-                    }
-                    var lspan = L.DomUtil.create('span', '', lnameP);
-                    lspan.innerHTML = longNameCap;
-                }
-                //var btnDiv = L.DomUtil.create('div', 'fcoo-legend-item-hide', btn);
+            // Dates with sea ice observations
+            this.availableDates = "";
+        
+            // Description of ice observation codes
+            this.aCodeDesc = null;
+            this.tCodeDesc = null;
+            this.kCodeDesc = null;
+            this.sCodeDesc = null;
+            this.CodeDesc = null;
+        
+	        this.options.style = function style(feature) {
+		        return {
+			        weight : 2,
+			        opacity : 1,
+			        color : 'grey',
+			        dashArray : '2',
+			        fillOpacity : getOpacity(feature.properties.acode),
+			        fillColor : feature.properties.colourcode
+		        };
+	        }
 
-                var item_text_extra = L.DomUtil.create('div', 'fcoo-legend-item-text', item);
-                if (attribution !== undefined) {
-                    var source = that._('Source', lang) + ': ' + attribution;
-                    var attrP = L.DomUtil.create('p', 'fcoo-legend-item-text-p', item_text_extra);
-                    attrP.innerHTML = source;
-                }
+            this.options.onEachFeature = function (feature, layer) { 
+        		timestamp = moment.unix(feature.properties.observationtime) 
+	        	var sPopTable =
+        			// format for third+ rows: Attribute, Value, Meaning 
+	        		"<b>" + feature.properties.areaname + "</b><br/>"
+		        	+ "<b>Observaret : "  	 + timestamp.format("YYYY-MM-DD - HH:mm:ss") + "</b><br/>"
+			        + "<table border='2' style='width:100%'>"
+				    + "<col align='right'><col align='center'><col align='left'>"
+				    + "<tr><th>ISKode</th><th>Vaerdi</th><th>Betydning</th></tr>"
+				    + "<tr><td>"
+				    + CodeDesc["A"]
+				    + "</td><td>"
+				    + feature.properties.acode
+				    + "</td><td>"
+				    + aCodeDesc[feature.properties.acode]
+				    + "</td></tr>"
+				    + "<tr><td>"
+				    + CodeDesc["S"]
+				    + "</td><td>"
+				    + feature.properties.scode
+				    + "</td><td>"
+				    + sCodeDesc[feature.properties.scode]
+				    + "</td></tr>"
+				    + "<tr><td>"
+				    + CodeDesc["T"]
+				    + "</td><td>"
+				    + feature.properties.tcode
+				    + "</td><td>"
+				    + tCodeDesc[feature.properties.tcode]
+				    + "</td></tr>"
+				    + "<tr><td>"
+				    + CodeDesc["K"]
+				    + "</td><td>"
+				    + feature.properties.kcode
+				    + "</td><td>"
+				    + kCodeDesc[feature.properties.kcode]
+				    + "</td></tr>" + "</table>";	
+		
+		        layer.on({
+			        mouseover : highlightFeature,
+			        mouseout : resetHighlight
+		        });
+		    
+		        layer.bindPopup(sPopTable );
+	        }
+		
+        },
 
-                // Date formatter
-                var dateAsHTML = function( m, language, tz ){
-                    var dateFormat = 'DD-MMM-YY HH:mm',
-                        localTxt = language == 'da' ? 'lokal' : 'local',
-                        result;
-                    if (tz == 'local') {
-                        result = m.local().format(dateFormat)+ '&nbsp;('+localTxt+')';
-                    } else {
-                        result = m.utc().format(dateFormat) + '&nbsp;(UTC)';
-                    }
-                    return result;
-                };
-
-                if (lastUpdated !== undefined) {
-                    var luString = that._('Updated', lang) + ': ' +
-                        dateAsHTML(lastUpdated, lang, that.options.timezone);
-                    var lastP = L.DomUtil.create('p', 'fcoo-legend-item-text-p', item_text_extra);
-                    lastP.innerHTML = luString;
-                }
-                if (epoch !== undefined) {
-                    var eString = that._('Analysis', lang) + ': ' +
-                        epoch.utc().format('YYYY-MM-DDTHH:mm') + ' UTC';
-                    var epochP = L.DomUtil.create('p', 'fcoo-legend-item-text-p', item_text_extra);
-                    epochP.innerHTML = eString;
-                }
-                var br = L.DomUtil.create('br', '', that._container);
-
-                $(itemMainSpan).click(function(){
-                    $(this).find('.fcoo-legend-item-compress').toggleClass('fa-caret-square-o-right');
-                    $(item_text_extra).slideToggle();
-                });
-                if (that.options.collapsedInfo) {
-                    $(btn).click();
-                }
+        onAdd: function (map) {
+            var that = this;
+            $.getJSON(this.options.url, function (data) {
+                that.addData(data);
+                L.GeoJSON.prototype.onAdd.call(that, map);
             });
+
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getIceObservationDates",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.availableDates = data;
+				},
+				error : function(request, status, error) {
+					this.selectedDate = '';
+					this.availableDates = '';
+				}
+			});
+			
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getACode",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.aCodeDesc  = data;
+				},
+				error : function(request, status, error) {
+					this.aCodeDesc = null;
+				}
+			});
+			
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getKCode",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.kCodeDesc  = data;
+				},
+				error : function(request, status, error) {
+					this.kCodeDesc = null;
+				}
+			});
+			
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getTCode",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.tCodeDesc = data;
+				},
+				error : function(request, status, error) {
+					this.tCodeDesc = null;
+				}
+			});
+			
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getSCode",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.sCodeDesc  = data;
+				},
+				error : function(request, status, error) {
+					this.sCodeDesc = null;
+				}
+			});
+			
+			$.ajax({
+				url : "https://api.fcoo.dk/sokice2/sokice/getCodeDesc",
+				type : 'get',
+				dataType : 'json',
+				async : true,
+				cache : true,
+				success : function(data) {
+					this.CodeDesc  = data;
+				},
+				error : function(request, status, error) {
+					this.CodeDesc = null;
+				}
+			});
         },
 
         /**
@@ -182,5 +284,8 @@
             return key;
         }
     });
+
+    return L.GeoJSON.IceObservations;
+
 })();
 
