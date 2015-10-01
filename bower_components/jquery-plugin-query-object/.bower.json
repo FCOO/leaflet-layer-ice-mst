@@ -1,0 +1,14 @@
+{
+  "name": "jquery-plugin-query-object",
+  "homepage": "https://github.com/alrusdi/jquery-plugin-query-object",
+  "_release": "ba75fc7207",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "ba75fc7207df6cd8fc081da6c486a70df95f8a54"
+  },
+  "_source": "https://github.com/alrusdi/jquery-plugin-query-object.git",
+  "_target": "master",
+  "_originalSource": "https://github.com/alrusdi/jquery-plugin-query-object.git",
+  "_direct": true
+}

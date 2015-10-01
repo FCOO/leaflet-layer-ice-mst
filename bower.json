@@ -1,0 +1,28 @@
+{
+  "name": "leaflet-layer-ice-mst",
+  "main": "leaflet-layer-ice-mst.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/FCOO/leaflet-layer-ice-mst",
+  "authors": [
+    "Søren Laursen <sln@fcoo.dk>",
+    "Jesper Baasch-Larsen <jla@fcoo.dk>"
+  ],
+  "description": "Leaflet layer containing sea ice reports from the Danish Naval Staff",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Leaflet": "https://github.com/jblarsen/Leaflet.git#master",
+    "jquery": "~2.1.4",
+    "jquery-ui": "~1.11.4",
+    "moment": "~2.10.6",
+    "jquery-plugin-query-object": "https://github.com/alrusdi/jquery-plugin-query-object.git#master",
+    "leaflet-plugins": "https://github.com/shramov/leaflet-plugins.git#~1.3.10",
+    "jquery.ui.datepicker-da": "http://trac.roundcube.net/browser/github/plugins/jqueryui/js/i18n/jquery.ui.datepicker-da.js?format=txt"
+  }
+}

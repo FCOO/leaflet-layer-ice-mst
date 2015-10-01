@@ -1,0 +1,14 @@
+{
+  "name": "jquery.ui.datepicker-da",
+  "_cacheHeaders": {
+    "Last-Modified": "Sun, 27 Apr 2014 13:35:07 GMT",
+    "Content-Length": "1010",
+    "Content-Type": "text/plain",
+    "Content-Disposition": "attachment"
+  },
+  "main": "index.js",
+  "_source": "http://trac.roundcube.net/browser/github/plugins/jqueryui/js/i18n/jquery.ui.datepicker-da.js?format=txt",
+  "_target": "*",
+  "_originalSource": "http://trac.roundcube.net/browser/github/plugins/jqueryui/js/i18n/jquery.ui.datepicker-da.js?format=txt",
+  "_direct": true
+}
