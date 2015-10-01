@@ -18,6 +18,7 @@
     <script src="bower_components/leaflet-plugins/control/Permalink.Marker.js"></script>
     <script src="bower_components/leaflet-plugins/control/Permalink.Layer.js"></script>
     <script src="bower_components/jquery.ui.datepicker-da/index.js"></script>
+    <script src="leaflet-layer-ice-mst.js"></script>
     <style>
     body {
 	    padding: 0;
@@ -32,6 +33,12 @@
 <body>
 	<div id="map"></div>
 	<script type="text/javascript">
+		var params = {};
+		window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+		    params[key] = value;
+		});
+		console.log( params );
+
 		var iceObservationData = null;
 		var selectedDate = '';
 
@@ -45,12 +52,6 @@
 		
 		var CodeDesc = null;
 
-		var params = {};
-		window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-		params[key] = value;
-		});
-		
-		console.log( params );
 		
 		dateParameter = new Date();
 
@@ -271,7 +272,7 @@
 
 		ColourLegend.onAdd = function(map) {
 			var div = L.DomUtil.create('div', 'colourlegend');
-			div.innerHTML = "<img src=\"acode_dk.png\" alt=\"Mountain View\">";
+			div.innerHTML = '<img src="images/acode_dk.png" alt="Mountain View">';
 
 			return div;
 		};
