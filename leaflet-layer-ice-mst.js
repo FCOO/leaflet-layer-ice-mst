@@ -11,40 +11,6 @@
 										: d == 'x' ? '1.0' : '0';
 	}
 
-	function highlightFeature(e) {
-		var layer = e.target;
-
-		layer.setStyle({
-			weight : 5,
-			color : '#666',
-			dashArray : '',
-			fillOpacity : 0.7
-		});
-
-		if (!L.Browser.ie && !L.Browser.opera) {
-			layer.bringToFront();
-		}
-
-		info.update(layer.feature.properties);
-	}
-
-	function resetHighlight(e) {
-		geojson.resetStyle(e.target);
-		info.update();
-	}
-
-
-	// Check if there is an iceobservation on the given date.
-	function available(date) {
-		dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-"
-				+ date.getFullYear();
-		if ($.inArray(dmy, availableDates) != -1) {
-			return [ true, "", "Observationer" ];
-		} else {
-			return [ false, "", "Ingen observationer" ];
-		}
-	}
-		
 	// Zoom to the feature
 	function zoomToFeature(e) {
 		map.fitBounds(e.target.getBounds());
@@ -57,7 +23,9 @@
      */
     L.GeoJSON.IceObservations = L.GeoJSON.extend({
         options: {
-            attribution: 'IS Observationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>'
+            attribution: 'IS Observationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>',
+            initialDate: null,
+            archiveMode: true
         },
 
         initialize: function (options) {
@@ -67,10 +35,10 @@
             this._layers = {};
 
             this.iceObservationData = null;
-            this.selectedDate = '';
+            this.selectedDate = this.options.initialDate;
 
             // Dates with sea ice observations
-            this.availableDates = "";
+            this.availableDates = [];
         
             // Description of ice observation codes
             this.aCodeDesc = null;
@@ -91,58 +59,126 @@
 	        }
 
             this.options.onEachFeature = function (feature, layer) { 
-        		timestamp = moment.unix(feature.properties.observationtime) 
-	        	var sPopTable =
-        			// format for third+ rows: Attribute, Value, Meaning 
-	        		"<b>" + feature.properties.areaname + "</b><br/>"
-		        	+ "<b>Observaret : "  	 + timestamp.format("YYYY-MM-DD - HH:mm:ss") + "</b><br/>"
-			        + "<table border='2' style='width:100%'>"
-				    + "<col align='right'><col align='center'><col align='left'>"
-				    + "<tr><th>ISKode</th><th>Vaerdi</th><th>Betydning</th></tr>"
-				    + "<tr><td>"
-				    + CodeDesc["A"]
-				    + "</td><td>"
-				    + feature.properties.acode
-				    + "</td><td>"
-				    + aCodeDesc[feature.properties.acode]
-				    + "</td></tr>"
-				    + "<tr><td>"
-				    + CodeDesc["S"]
-				    + "</td><td>"
-				    + feature.properties.scode
-				    + "</td><td>"
-				    + sCodeDesc[feature.properties.scode]
-				    + "</td></tr>"
-				    + "<tr><td>"
-				    + CodeDesc["T"]
-				    + "</td><td>"
-				    + feature.properties.tcode
-				    + "</td><td>"
-				    + tCodeDesc[feature.properties.tcode]
-				    + "</td></tr>"
-				    + "<tr><td>"
-				    + CodeDesc["K"]
-				    + "</td><td>"
-				    + feature.properties.kcode
-				    + "</td><td>"
-				    + kCodeDesc[feature.properties.kcode]
-				    + "</td></tr>" + "</table>";	
-		
-		        layer.on({
-			        mouseover : highlightFeature,
-			        mouseout : resetHighlight
-		        });
-		    
-		        layer.bindPopup(sPopTable );
+                // We have to make sure that the sea ice codes are ready before
+                // we add the layer information
+                var dt_check = 10; // How often to check
+                var dt_max = 30000; // When to give up
+                var dt_current = 0;
+                var waitForCodes = function() {
+                    if (that.aCodeDesc !== null && that.tCodeDesc !== null &&
+                        that.kCodeDesc !== null && that.sCodeDesc !== null &&
+                        that.CodeDesc !== null) {
+        		        var timestamp = moment.unix(feature.properties.observationtime) 
+	        	        var sPopTable =
+        			        // format for third+ rows: Attribute, Value, Meaning 
+	        		        "<b>" + feature.properties.areaname + "</b><br/>"
+		        	        + "<b>Observaret : "  	 + timestamp.format("YYYY-MM-DD - HH:mm:ss") + "</b><br/>"
+			                + "<table border='2' style='width:100%'>"
+				            + "<col align='right'><col align='center'><col align='left'>"
+				            + "<tr><th>ISKode</th><th>Vaerdi</th><th>Betydning</th></tr>"
+				            + "<tr><td>"
+				            + that.CodeDesc["A"]
+				            + "</td><td>"
+				            + feature.properties.acode
+				            + "</td><td>"
+				            + that.aCodeDesc[feature.properties.acode]
+				            + "</td></tr>"
+				            + "<tr><td>"
+				            + that.CodeDesc["S"]
+				            + "</td><td>"
+				            + feature.properties.scode
+				            + "</td><td>"
+				            + that.sCodeDesc[feature.properties.scode]
+				            + "</td></tr>"
+				            + "<tr><td>"
+				            + that.CodeDesc["T"]
+				            + "</td><td>"
+				            + feature.properties.tcode
+				            + "</td><td>"
+				            + that.tCodeDesc[feature.properties.tcode]
+				            + "</td></tr>"
+				            + "<tr><td>"
+				            + that.CodeDesc["K"]
+				            + "</td><td>"
+				            + feature.properties.kcode
+				            + "</td><td>"
+				            + that.kCodeDesc[feature.properties.kcode]
+				            + "</td></tr>" + "</table>";	
+		                layer.on({
+			                mouseover: function(e) {
+		                        var layer = e.target;
+
+		                        layer.setStyle({
+			                        weight : 5,
+			                        color : '#666',
+			                        dashArray : '',
+			                        fillOpacity : 0.7
+		                        });
+
+		                        if (!L.Browser.ie && !L.Browser.opera) {
+			                        layer.bringToFront();
+		                        }
+
+                                map.fire('iceupdate', {
+                                    'props': layer.feature.properties
+                                });
+	                        },
+			                mouseout: function(e) {
+		                        that.resetStyle(e.target);
+                                map.fire('iceupdate', {
+                                    'props': null
+                                });
+                            }
+		                });
+		                layer.bindPopup(sPopTable );
+                    } else {
+                        if (dt_current <= dt_max) {
+                            dt_current += dt_check;
+                            setTimeout(function (){waitForCodes();}, dt_check);
+                        } else {
+                            var msg = "Failed getting sea ice codes from server";
+                            //noty({text: msg, type: "error"});
+                            throw new Error(msg);
+                        }
+                    }
+                }
+                waitForCodes();
 	        }
 		
         },
 
+        getIceReport: function(datetime) {
+            var that = this;
+            var date = moment(datetime).format('YYYY/MM/DD');
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getIceReportDate/"
+                    + date,
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.clearLayers();
+                    // Store for fallback
+                    that.iceObservationData = data;
+                    that.addData(data);
+                    that._map.fire('iceupdate', {
+                        datetime: datetime,
+                        geojson: data
+                    });
+                },
+                error : function(request, status, error) {
+                    that.clearLayers();
+                    that.addData(that.iceObservationData);
+                    selectedDate = null;
+                }
+            });
+        },
+
         onAdd: function (map) {
             var that = this;
-            $.getJSON(this.options.url, function (data) {
-                that.addData(data);
-                L.GeoJSON.prototype.onAdd.call(that, map);
+            map.on('datetimechange', function(data) {
+                that.getIceReport(data.datetime);
             });
 
 			$.ajax({
@@ -152,11 +188,29 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.availableDates = data;
+					that.availableDates = data;
+                    // Add info box
+                    var infoOptions = {
+                        initialDate: that.selectedDate
+                    };
+                    (new L.Control.IceInfoBox(infoOptions)).addTo(map);
+
+                    // Add legend
+                    (new L.Control.IceLegend()).addTo(map);
+
+                    if (that.options.archiveMode) {
+                        // Add date picker
+                        var dateOptions = {
+                            initialDate: that.selectedDate,
+                            availableDates: that.availableDates
+                        };
+                        (new L.Control.IceDatepicker(dateOptions)).addTo(map);
+                    }
+                    L.GeoJSON.prototype.onAdd.call(that, map);
 				},
 				error : function(request, status, error) {
-					this.selectedDate = '';
-					this.availableDates = '';
+					that.selectedDate = '';
+					that.availableDates = '';
 				}
 			});
 			
@@ -167,10 +221,10 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.aCodeDesc  = data;
+					that.aCodeDesc  = data;
 				},
 				error : function(request, status, error) {
-					this.aCodeDesc = null;
+					that.aCodeDesc = null;
 				}
 			});
 			
@@ -181,10 +235,10 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.kCodeDesc  = data;
+					that.kCodeDesc  = data;
 				},
 				error : function(request, status, error) {
-					this.kCodeDesc = null;
+					that.kCodeDesc = null;
 				}
 			});
 			
@@ -195,10 +249,10 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.tCodeDesc = data;
+					that.tCodeDesc = data;
 				},
 				error : function(request, status, error) {
-					this.tCodeDesc = null;
+					that.tCodeDesc = null;
 				}
 			});
 			
@@ -209,10 +263,10 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.sCodeDesc  = data;
+					that.sCodeDesc  = data;
 				},
 				error : function(request, status, error) {
-					this.sCodeDesc = null;
+					that.sCodeDesc = null;
 				}
 			});
 			
@@ -223,10 +277,10 @@
 				async : true,
 				cache : true,
 				success : function(data) {
-					this.CodeDesc  = data;
+					that.CodeDesc  = data;
 				},
 				error : function(request, status, error) {
-					this.CodeDesc = null;
+					that.CodeDesc = null;
 				}
 			});
         },
@@ -247,30 +301,6 @@
                 da: {
                       'Source': 'Kilde',
                       'Updated': 'Opdateret',
-                      'Analysis': 'Analyse',
-                      'Wave height': 'Bølgehøjde',
-                      'Mean wave period': 'Bølgeperiode',
-                      'Vel.': 'Strømstyrke',
-                      'Elevation': 'Vandstand',
-                      'Temperature': 'Temperatur',
-                      'Temp.': 'Temperatur',
-                      'Salinity': 'Salinitet',
-                      'Sea surface temperature': 'Temperatur',
-                      'Sea surface salinity': 'Salinitet',
-                      'Wind speed': 'Vindstyrke',
-                      'Wind': 'Vindstyrke',
-                      'Air temperature (2m)': '2 meter temperatur',
-                      'Sea ice concentration': 'Haviskoncentration',
-                      'Sea ice thickness': 'Havistykkelse',
-                      'Sea ice drift speed': 'Havisdrifthastighed',
-                      'Visibility': 'Sigtbarhed',
-                      'Total precipitation flux': 'Nedbør',
-                      '2 metre temperature': '2 meter temperatur',
-                      'Total cloud cover': 'Skydække',
-                      'Significant wave height of combined wind waves and swell': 'Bølgehøjde',
-                      'mm/hour': 'mm/time',
-                      'degC': '&deg;C',
-                      'knots': 'knob',
                       'fraction': 'fraktion',
                       'meters': 'meter'
                 }
@@ -289,3 +319,153 @@
 
 })();
 
+(function (){
+    "use strict";
+    /*jslint browser: true*/
+    /*global L, console*/
+
+    // Date picker
+    L.Control.IceDatepicker = L.Control.extend({
+        options: {
+            position : 'topright',
+            initialDate: null,
+            availableDates: [],
+        },
+            
+        initialize: function(options) {
+            L.Util.setOptions(this, options);
+            this.selectedDate = this.options.initialDate;
+            this._map = null;
+        },
+
+        onAdd: function(map) {
+            var that = this;
+            this._container = L.DomUtil.create('div', 'leaflet-layer-ice-mst-datepicker');
+
+        	// Check if there is an iceobservation on the given date.
+	        function available(date) {
+		        var dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-"
+				        + date.getFullYear();
+		        if ($.inArray(dmy, that.options.availableDates) != -1) {
+			        return [ true, "", "Observationer" ];
+		        } else {
+			        return [ false, "", "Ingen observationer" ];
+		        }
+	        }
+		
+            $(this._container).datepicker({
+                buttonImage : "/datepicker/calendar.gif",
+                maxDate : "+0" ,
+                beforeShowDay : available,
+                minDate : new Date(2013, 1 - 1, 1)
+            });
+
+            // Set the format so it match the rest service.
+            $(this._container).datepicker("option", "dateFormat", "yy\/mm\/dd");
+
+            // Set onchange event handler
+            $(this._container).change(function() {
+                var datetime = moment.utc($(that._container).val(), "YYYY/MM/DD");
+                that._map.fire('datetimechange', {datetime: datetime});
+            });
+
+            // Set initial date
+            $(this._container).datepicker( "setDate", this.selectedDate.format('YYYY/MM/DD') );
+            $(this._container).change();
+
+            return this._container;
+        },
+    });
+
+    return L.Control.IceDatepicker;
+
+})();
+
+(function (){
+    "use strict";
+    /*jslint browser: true*/
+    /*global L, console*/
+
+    // Info box - displays infomation about selected area and current observation time.
+    L.Control.IceInfoBox = L.Control.extend({
+        options: {
+            position : 'topright',
+            initialDate: null
+        },
+            
+        initialize: function(options) {
+            L.Util.setOptions(this, options);
+            this.selectedDate = '';
+            if (this.options.initialDate !== null) {
+                this.selectedDate = this.options.initialDate.format('YYYY/MM/DD');
+            }
+            this._map = null;
+        },
+
+        onAdd: function(map) {
+            var that = this;
+            this._container = L.DomUtil.create('div', 'leaflet-layer-ice-mst-info');
+            map.on('iceupdate', function(data) {
+                if (data.hasOwnProperty('props')) {
+                    that.update(data.props);
+                    return;
+                }
+                var date = that.selectedDate;
+                if (data.hasOwnProperty('datetime')) {
+                    date = moment(data.datetime).format('YYYY/MM/DD');
+                    that.selectedDate = date
+                }
+                var numObs = data.geojson.features.length;
+                var selectedDate = date
+                + " -  Antal observationer : "
+                + numObs;
+                that.selectedDate = selectedDate
+                + '<br/><a href="./sokice" target="_blank"></a>';
+                that.update(null);
+            });
+            this.update();
+            return this._container;
+        },
+
+        update: function(props) {
+            props ? timestamp = moment.unix(props.observationtime) : moment
+                    .unix(0)
+            this._container.innerHTML = '<h4>Dato : '
+                    + this.selectedDate
+                    + '</h4>'
+                    + (props ? '<b>' + props.areaname + '</b><br/>'
+                            + props.icecode + '<br/>Observeret : '
+                            + timestamp.format("YYYY-MM-DD - HH:mm:ss")
+                            : 'V&aelig;lg dato - kun datoer med observationer kan v&aelig;lges.<br/>Flyt mus til omr&aring;de for yderlig information <br/>Klik p&aring; omr&aring;de for komplet information');
+        }
+    });
+
+    return L.Control.IceInfoBox;
+
+})();
+
+(function (){
+    "use strict";
+    /*jslint browser: true*/
+    /*global L, console*/
+
+    // Color legend for ice
+    L.Control.IceLegend = L.Control.extend({
+        options: {
+            position : 'bottomleft',
+        },
+            
+        initialize: function(options) {
+            L.Util.setOptions(this, options);
+            this._map = null;
+        },
+
+        onAdd: function(map) {
+            var that = this;
+            this._container = L.DomUtil.create('div', 'leaflet-layer-ice-mst-legend');
+            this._container.innerHTML = '<img src="images/acode_dk.png" alt="Color Legend">';
+            return this._container;
+        }
+    });
+    return L.Control.IceLegend;
+})();

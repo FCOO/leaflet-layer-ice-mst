@@ -39,10 +39,9 @@
 		    params[key] = value;
 		});
 
-		var dateParameter = new Date();
+		var dateParameter = moment();
 		if( params.hasOwnProperty("date") )  {
-		    dateParts = params["date"].split("-");
-		    dateParameter = new Date(dateParts[0],dateParts[1],dateParts[2]);
+            dateParameter = moment.utc(params["date"], "YYYY-MM-DD");
 		}
 
         // Initialize map
