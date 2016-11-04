@@ -17,8 +17,8 @@
     "tests"
   ],
   "dependencies": {
-    "Leaflet": "https://github.com/jblarsen/Leaflet.git#master",
-    "jquery": "~2.1.4",
+    "leaflet": "1.0.1",
+    "jquery": "3.1.1",
     "jquery-ui": "~1.11.4",
     "moment": "~2.10.6",
     "jquery-plugin-query-object": "https://github.com/alrusdi/jquery-plugin-query-object.git#master",
