@@ -3,18 +3,18 @@
     /*jslint browser: true*/
     /*global L, console*/
 
-	function getOpacity(d) {
-		return d == '0' ? '0.6' : d == '1' ? '0.6' : d == '2' ? '0.6'
-				: d == '3' ? '0.6' : d == '4' ? '0.6' : d == '5' ? '0.6'
-						: d == '6' ? '0.6' : d == '7' ? '0.6'
-								: d == '8' ? '0.6' : d == '9' ? '0.6'
-										: d == 'x' ? '1.0' : '0';
-	}
+    function getOpacity(d) {
+        return d == '0' ? '0.6' : d == '1' ? '0.6' : d == '2' ? '0.6'
+             : d == '3' ? '0.6' : d == '4' ? '0.6' : d == '5' ? '0.6'
+             : d == '6' ? '0.6' : d == '7' ? '0.6'
+             : d == '8' ? '0.6' : d == '9' ? '0.6'
+             : d == 'x' ? '1.0' : '0';
+    }
 
-	// Zoom to the feature
-	function zoomToFeature(e) {
-		map.fitBounds(e.target.getBounds());
-	}
+    // Zoom to the feature
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+    }
 
     /**
      * A Leaflet control for showing one or more legends. Each legend contains
@@ -23,7 +23,7 @@
      */
     L.GeoJSON.IceObservations = L.GeoJSON.extend({
         options: {
-            attribution: 'IS Observationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>',
+            attribution: 'Isobservationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>',
             initialDate: null,
             archiveMode: true
         },
@@ -47,16 +47,16 @@
             this.sCodeDesc = null;
             this.CodeDesc = null;
         
-	        this.options.style = function style(feature) {
-		        return {
-			        weight : 2,
-			        opacity : 1,
-			        color : 'grey',
-			        dashArray : '2',
-			        fillOpacity : getOpacity(feature.properties.acode),
-			        fillColor : feature.properties.colourcode
-		        };
-	        }
+            this.options.style = function style(feature) {
+                return {
+                    weight : 2,
+                    opacity : 1,
+                    color : 'grey',
+                    dashArray : '2',
+                    fillOpacity : getOpacity(feature.properties.acode),
+                    fillColor : feature.properties.colourcode
+                };
+            }
 
             this.options.onEachFeature = function (feature, layer) { 
                 // We have to make sure that the sea ice codes are ready before
@@ -68,69 +68,69 @@
                     if (that.aCodeDesc !== null && that.tCodeDesc !== null &&
                         that.kCodeDesc !== null && that.sCodeDesc !== null &&
                         that.CodeDesc !== null) {
-        		        var timestamp = moment.unix(feature.properties.observationtime) 
-	        	        var sPopTable =
-        			        // format for third+ rows: Attribute, Value, Meaning 
-	        		        "<b>" + feature.properties.areaname + "</b><br/>"
-		        	        + "<b>Observaret : "  	 + timestamp.format("YYYY-MM-DD - HH:mm:ss") + "</b><br/>"
-			                + "<table border='2' style='width:100%'>"
-				            + "<col align='right'><col align='center'><col align='left'>"
-				            + "<tr><th>ISKode</th><th>Vaerdi</th><th>Betydning</th></tr>"
-				            + "<tr><td>"
-				            + that.CodeDesc["A"]
-				            + "</td><td>"
-				            + feature.properties.acode
-				            + "</td><td>"
-				            + that.aCodeDesc[feature.properties.acode]
-				            + "</td></tr>"
-				            + "<tr><td>"
-				            + that.CodeDesc["S"]
-				            + "</td><td>"
-				            + feature.properties.scode
-				            + "</td><td>"
-				            + that.sCodeDesc[feature.properties.scode]
-				            + "</td></tr>"
-				            + "<tr><td>"
-				            + that.CodeDesc["T"]
-				            + "</td><td>"
-				            + feature.properties.tcode
-				            + "</td><td>"
-				            + that.tCodeDesc[feature.properties.tcode]
-				            + "</td></tr>"
-				            + "<tr><td>"
-				            + that.CodeDesc["K"]
-				            + "</td><td>"
-				            + feature.properties.kcode
-				            + "</td><td>"
-				            + that.kCodeDesc[feature.properties.kcode]
-				            + "</td></tr>" + "</table>";	
-		                layer.on({
-			                mouseover: function(e) {
-		                        var layer = e.target;
+                var timestamp = moment.unix(feature.properties.observationtime) 
+                var sPopTable =
+                    // format for third+ rows: Attribute, Value, Meaning 
+                    "<b>" + feature.properties.areaname + "</b><br/>"
+                    + "<b>Observaret : "     + timestamp.format("YYYY-MM-DD - HH:mm:ss") + "</b><br/>"
+                    + "<table border='2' style='width:100%'>"
+                        + "<col align='right'><col align='center'><col align='left'>"
+                        + "<tr><th>ISKode</th><th>Vaerdi</th><th>Betydning</th></tr>"
+                        + "<tr><td>"
+                        + that.CodeDesc["A"]
+                        + "</td><td>"
+                        + feature.properties.acode
+                        + "</td><td>"
+                        + that.aCodeDesc[feature.properties.acode]
+                        + "</td></tr>"
+                        + "<tr><td>"
+                        + that.CodeDesc["S"]
+                        + "</td><td>"
+                        + feature.properties.scode
+                        + "</td><td>"
+                        + that.sCodeDesc[feature.properties.scode]
+                        + "</td></tr>"
+                        + "<tr><td>"
+                        + that.CodeDesc["T"]
+                        + "</td><td>"
+                        + feature.properties.tcode
+                        + "</td><td>"
+                        + that.tCodeDesc[feature.properties.tcode]
+                        + "</td></tr>"
+                        + "<tr><td>"
+                        + that.CodeDesc["K"]
+                        + "</td><td>"
+                        + feature.properties.kcode
+                        + "</td><td>"
+                        + that.kCodeDesc[feature.properties.kcode]
+                        + "</td></tr>" + "</table>";    
+                layer.on({
+                    mouseover: function(e) {
+                    var layer = e.target;
 
-		                        layer.setStyle({
-			                        weight : 5,
-			                        color : '#666',
-			                        dashArray : '',
-			                        fillOpacity : 0.7
-		                        });
+                    layer.setStyle({
+                        weight : 5,
+                        color : '#666',
+                        dashArray : '',
+                        fillOpacity : 0.7
+                    });
 
-		                        if (!L.Browser.ie && !L.Browser.opera) {
-			                        layer.bringToFront();
-		                        }
+                    if (!L.Browser.ie && !L.Browser.opera) {
+                        layer.bringToFront();
+                    }
 
                                 map.fire('iceupdate', {
                                     'props': layer.feature.properties
                                 });
-	                        },
-			                mouseout: function(e) {
-		                        that.resetStyle(e.target);
+                },
+                    mouseout: function(e) {
+                    that.resetStyle(e.target);
                                 map.fire('iceupdate', {
                                     'props': null
                                 });
                             }
-		                });
-		                layer.bindPopup(sPopTable );
+                });
+                layer.bindPopup(sPopTable );
                     } else {
                         if (dt_current <= dt_max) {
                             dt_current += dt_check;
@@ -143,8 +143,8 @@
                     }
                 }
                 waitForCodes();
-	        }
-		
+            }
+        
         },
 
         getIceReport: function(datetime) {
@@ -181,14 +181,14 @@
                 that.getIceReport(data.datetime);
             });
 
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getIceObservationDates",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.availableDates = data;
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getIceObservationDates",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.availableDates = data;
                     // Add info box
                     var infoOptions = {
                         initialDate: that.selectedDate
@@ -207,82 +207,82 @@
                         (new L.Control.IceDatepicker(dateOptions)).addTo(map);
                     }
                     L.GeoJSON.prototype.onAdd.call(that, map);
-				},
-				error : function(request, status, error) {
-					that.selectedDate = '';
-					that.availableDates = '';
-				}
-			});
-			
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getACode",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.aCodeDesc  = data;
-				},
-				error : function(request, status, error) {
-					that.aCodeDesc = null;
-				}
-			});
-			
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getKCode",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.kCodeDesc  = data;
-				},
-				error : function(request, status, error) {
-					that.kCodeDesc = null;
-				}
-			});
-			
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getTCode",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.tCodeDesc = data;
-				},
-				error : function(request, status, error) {
-					that.tCodeDesc = null;
-				}
-			});
-			
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getSCode",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.sCodeDesc  = data;
-				},
-				error : function(request, status, error) {
-					that.sCodeDesc = null;
-				}
-			});
-			
-			$.ajax({
-				url : "https://api.fcoo.dk/sokice2/sokice/getCodeDesc",
-				type : 'get',
-				dataType : 'json',
-				async : true,
-				cache : true,
-				success : function(data) {
-					that.CodeDesc  = data;
-				},
-				error : function(request, status, error) {
-					that.CodeDesc = null;
-				}
-			});
+                },
+                error : function(request, status, error) {
+                    that.selectedDate = '';
+                    that.availableDates = '';
+                }
+            });
+            
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getACode",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.aCodeDesc  = data;
+                },
+                error : function(request, status, error) {
+                    that.aCodeDesc = null;
+                }
+            });
+            
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getKCode",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.kCodeDesc  = data;
+                },
+                error : function(request, status, error) {
+                    that.kCodeDesc = null;
+                }
+            });
+            
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getTCode",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.tCodeDesc = data;
+                },
+                error : function(request, status, error) {
+                    that.tCodeDesc = null;
+                }
+            });
+            
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getSCode",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.sCodeDesc  = data;
+                },
+                error : function(request, status, error) {
+                    that.sCodeDesc = null;
+                }
+            });
+            
+            $.ajax({
+                url : "https://api.fcoo.dk/sokice2/sokice/getCodeDesc",
+                type : 'get',
+                dataType : 'json',
+                async : true,
+                cache : true,
+                success : function(data) {
+                    that.CodeDesc  = data;
+                },
+                error : function(request, status, error) {
+                    that.CodeDesc = null;
+                }
+            });
         },
 
         /**
@@ -342,17 +342,17 @@
             var that = this;
             this._container = L.DomUtil.create('div', 'leaflet-layer-ice-mst-datepicker');
 
-        	// Check if there is an iceobservation on the given date.
-	        function available(date) {
-		        var dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-"
-				        + date.getFullYear();
-		        if ($.inArray(dmy, that.options.availableDates) != -1) {
-			        return [ true, "", "Observationer" ];
-		        } else {
-			        return [ false, "", "Ingen observationer" ];
-		        }
-	        }
-		
+        // Check if there is an iceobservation on the given date.
+        function available(date) {
+            var dmy = date.getDate() + "-" + (date.getMonth() + 1) + "-"
+                    + date.getFullYear();
+            if ($.inArray(dmy, that.options.availableDates) != -1) {
+                return [ true, "", "Observationer" ];
+            } else {
+                return [ false, "", "Ingen observationer" ];
+            }
+        }
+        
             $(this._container).datepicker({
                 buttonImage : "/datepicker/calendar.gif",
                 maxDate : "+0" ,
