@@ -24,7 +24,7 @@
     L.GeoJSON.IceObservations = L.GeoJSON.extend({
         options: {
             attribution: 'Isobservationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>',
-            initialDate: null,
+            initialDate: moment(),
             archiveMode: false
         },
 
