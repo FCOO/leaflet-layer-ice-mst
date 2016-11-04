@@ -37,6 +37,9 @@
             this.iceObservationData = null;
             this.selectedDate = this.options.initialDate;
 
+            // Legend control
+            this.legend = new L.Control.IceLegend();
+
             // Dates with sea ice observations
             this.availableDates = [];
         
@@ -182,7 +185,7 @@
             });
 
             // Add legend
-            (new L.Control.IceLegend()).addTo(map);
+            this.legend.addTo(map);
 
             if (that.options.archiveMode) {
                 $.ajax({
@@ -283,6 +286,11 @@
                     that.CodeDesc = null;
                 }
             });
+        },
+
+        onRemove: function (map) {
+            // Add legend
+            this.legend.removeFrom(map);
         },
 
         /**
