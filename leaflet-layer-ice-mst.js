@@ -25,7 +25,7 @@
         options: {
             attribution: 'Isobservationer &copy; <a href="http://www.fcoo.dk/">www.fcoo.dk</a>',
             initialDate: null,
-            archiveMode: true
+            archiveMode: false
         },
 
         initialize: function (options) {
@@ -181,38 +181,38 @@
                 that.getIceReport(data.datetime);
             });
 
-            $.ajax({
-                url : "https://api.fcoo.dk/sokice2/sokice/getIceObservationDates",
-                type : 'get',
-                dataType : 'json',
-                async : true,
-                cache : true,
-                success : function(data) {
-                    that.availableDates = data;
-                    // Add info box
-                    var infoOptions = {
-                        initialDate: that.selectedDate
-                    };
-                    (new L.Control.IceInfoBox(infoOptions)).addTo(map);
+            // Add legend
+            (new L.Control.IceLegend()).addTo(map);
 
-                    // Add legend
-                    (new L.Control.IceLegend()).addTo(map);
-
-                    if (that.options.archiveMode) {
+            if (that.options.archiveMode) {
+                $.ajax({
+                    url : "https://api.fcoo.dk/sokice2/sokice/getIceObservationDates",
+                    type : 'get',
+                    dataType : 'json',
+                    async : true,
+                    cache : true,
+                    success : function(data) {
+                        that.availableDates = data;
+                        // Add info box
+                        var infoOptions = {
+                            initialDate: that.selectedDate
+                        };
+                        (new L.Control.IceInfoBox(infoOptions)).addTo(map);
+    
                         // Add date picker
                         var dateOptions = {
                             initialDate: that.selectedDate,
                             availableDates: that.availableDates
                         };
                         (new L.Control.IceDatepicker(dateOptions)).addTo(map);
+                        L.GeoJSON.prototype.onAdd.call(that, map);
+                    },
+                    error : function(request, status, error) {
+                        that.selectedDate = '';
+                        that.availableDates = '';
                     }
-                    L.GeoJSON.prototype.onAdd.call(that, map);
-                },
-                error : function(request, status, error) {
-                    that.selectedDate = '';
-                    that.availableDates = '';
-                }
-            });
+                });
+            }
             
             $.ajax({
                 url : "https://api.fcoo.dk/sokice2/sokice/getACode",

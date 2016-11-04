@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IS Observationer i Danmark</title>
+    <title>Isobservationer i Danmark</title>
     <meta charset="utf-8" />
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -63,7 +63,7 @@
         // Add ice reports layer
         var iceOptions = {
             initialDate: dateParameter,
-            archiveMode: true
+            archiveMode: false
         }
         var iceLayer = (new L.GeoJSON.IceObservations(iceOptions)).addTo(map);
     </script>
