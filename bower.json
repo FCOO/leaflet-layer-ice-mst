@@ -22,7 +22,6 @@
     "jquery-ui": "~1.11.4",
     "moment": "~2.10.6",
     "jquery-plugin-query-object": "https://github.com/alrusdi/jquery-plugin-query-object.git#master",
-    "leaflet-plugins": "https://github.com/shramov/leaflet-plugins.git#~1.3.10",
-    "jquery.ui.datepicker-da": "http://trac.roundcube.net/browser/github/plugins/jqueryui/js/i18n/jquery.ui.datepicker-da.js?format=txt"
+    "leaflet-plugins": "https://github.com/shramov/leaflet-plugins.git#~1.3.10"
   }
 }
