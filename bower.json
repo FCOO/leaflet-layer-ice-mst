@@ -1,7 +1,7 @@
 {
   "name": "leaflet-layer-ice-mst",
   "main": "leaflet-layer-ice-mst.js",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "homepage": "https://github.com/FCOO/leaflet-layer-ice-mst",
   "authors": [
     "Søren Laursen <sln@fcoo.dk>",
